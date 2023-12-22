@@ -1,13 +1,13 @@
-import io
 import random
 import shutil
-from datetime import datetime
-
-import plotly.graph_objects as go
 import plotly.express as px
 import streamlit as st
 import pandas as pd
 import json
+from firebase_admin import credentials, firestore, initialize_app, get_app
+
+
+
 
 config_file_path = '/Users/admin/Desktop/pythonStreamlitDemo/Files/Paths.txt'
 config_data = {}
@@ -22,6 +22,8 @@ data = pd.read_csv(config_data.get('MODEL'))
 copy = shutil.copyfile(config_data.get('MODEL'), config_data.get('DATA'))
 
 init_level = 2
+flag = 0
+min_level = 1
 
 levels = data['Levels'].unique()
 split_levels = [l.split(" ")[1] for l in levels]
@@ -62,8 +64,7 @@ def show_plotted_graph():
     df['Points'] = df['Points'].str.replace('\n', '<br>')
     df['Scale'] = df['Scale'].str.wrap(10)
     df['Scale'] = df['Scale'].str.replace('\n', '<br>')
-    df['Values'] = df['Values'] + 0.01
-
+    df['Value'] = df['Value'] + 0.01
     custom_colors = [
         'rgb(255, 0, 0)',   # Red
         'rgb(255, 80, 0)',  # Orange-Red
@@ -74,30 +75,55 @@ def show_plotted_graph():
         'rgb(150, 220, 0)', # Lime Green
         'rgb(0, 128, 0)', 'rgb(0, 128, 0)'
     ]
-
     fig = px.sunburst(
         data_frame=df,
         path=['Scale', 'Levels', 'Points'],
-        values='Values',
+        values='Value',
         maxdepth=-2,
         width=800,
         height=800,
-        color='Values',
+        color='Value',
         custom_data=['Points', 'Questions'],
         color_continuous_scale=custom_colors, # Show label, value, and parent on hover
     )
-
     fig.update_traces(
         textfont_size=12,
         insidetextorientation='radial',
         textinfo='label+text+percent entry',
     )
-
     fig.update_layout(
         margin=dict(l=10, r=10, b=10, t=10),  # Adjust the values to control spacing
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig)
 
+
+
+
+def send_responses_to_database():
+    # Replace the path with the correct path to your Firebase Admin SDK JSON file
+    cred = credentials.Certificate("/Users/admin/Desktop/pythonStreamlitDemo/ Config/testapp-20a32-firebase-adminsdk-qf29b-35e854714d.json")
+
+    try:
+        app = get_app()
+    except ValueError:
+        app = initialize_app(cred)
+
+    # Assuming config_data is defined somewhere with the path to your JSON file
+    json_file_path = config_data.get('RESPONSE_JSON')
+
+    with open(json_file_path, 'r') as file:
+        json_data = file.read()
+
+    # Convert the list of dictionaries to a JSON-formatted string
+    response_string = json.dumps(json_data)
+
+    # Send the entire string to Firestore
+    data = {
+        'userResponse': response_string
+    }
+    db = firestore.client()
+    doc_ref = db.collection('user_responses').document()
+    doc_ref.set(data)
 
 
 def update_scale_id():
@@ -141,7 +167,7 @@ def update_csv_from_json(json_file_path):
         question_id = response["Question_Id"]
         value = response["Value"]
         # Update the 'Values' column in the DataFrame for the corresponding Question ID
-        df.loc[df['Q_Id'] == question_id, 'Values'] = value
+        df.loc[df['Q_Id'] == question_id, 'Value'] = value
 
     # Write the updated DataFrame back to the original CSV file
     df.to_csv(csv_file_path, index=False)
@@ -154,26 +180,40 @@ def calculate_accuracy():
 
 def update_level_id():
     accuracy = calculate_accuracy()
-
+    global flag
     if accuracy > 70:
+
         new_level_id = int(st.session_state.level_id[1:]) + 1
+        new_max_level = init_level
+
         if new_level_id > max_level:
             update_scale_id()
+        elif int(st.session_state.level_id[1:]) == 1:
+            flag = 1
+            if new_level_id >= new_max_level:
+                update_scale_id()
+            st.session_state.level_id = f"L{new_level_id}"
+        elif flag == 1:
+            if new_level_id < new_max_level:
+                st.session_state.level_id = f"{new_level_id}"
+            else:
+                update_scale_id()
+                flag = 0
         else:
             st.session_state.level_id = f'L{new_level_id}'
     else:
-        if st.session_state.level_id == 'L1':
-            # Check accuracy for Level 1
-            filtered_questions = data[(data["Scale_Id"] == st.session_state.scale_id) & (data["Level_Id"] == 'L1')]
-            if not filtered_questions.empty and accuracy < 70:
-                st.warning("You did not meet the accuracy threshold for Level 1. Terminating the application.")
-                st.stop()
-            elif filtered_questions.empty:
-                st.session_state.level_id = 'L2'
-            # No need to explicitly check accuracy for 'L1' here
+        if int(st.session_state.level_id[1:]) == init_level:
+            new_level_id = 1
+            st.session_state.level_id = f"L{new_level_id}"
+            filtered_questions = data[(data["Scale_Id"] == st.session_state.scale_id) & (data["Level_Id"] == st.session_state.level_id)]
+            if filtered_questions.empty:
+                update_scale_id()
+        elif st.session_state.level_id == f'L{min_level}':
+            filtered_questions = data[(data["Scale_Id"] == st.session_state.scale_id) & (data["Level_Id"] == st.session_state.level_id)]
+            if filtered_questions.empty:
+                st.session_state.level_id = f'L{min_level+1}'
         else:
-            # Reset to 'L1' if not already in 'L1'
-            st.session_state.level_id = 'L1'
+            update_scale_id()
 
     st.session_state.responses = {}
     st.rerun()
@@ -210,28 +250,21 @@ def main():
         for _, question in filtered_questions.iterrows():
             key = f"{question['Q_Id']}_{st.session_state.level_id}"  # Use both Q_Id and level_id as a key
             option = form.radio(question["Questions"], list(OPTIONS_Values.keys()), key=key)
+
+            # if option is not None:
             value = OPTIONS_Values[option]
 
             # Store the response for each question with Question_ID
             st.session_state.responses[key] = {"Question_Id": question['Q_Id'], "Value": value,
-                                               "Level_Id": st.session_state.level_id}
+                                                "Level_Id": st.session_state.level_id}
 
-        if form.form_submit_button("Submit Responses") and len(
-                st.session_state.responses) == len(filtered_questions):
+
+        # Outside the for loop
+        if form.form_submit_button("Submit Responses") and len(st.session_state.responses) == len(filtered_questions):
             # Calculate accuracy with the latest responses
             accuracy = calculate_accuracy()
             st.success(f"Responses submitted successfully! Accuracy: {accuracy:.2f}%")
 
-            # new_responses = [
-            #     {
-            #         "Question_Id": resp["Question_Id"],
-            #         "Level_Id": resp["Level_Id"],
-            #         "Value": resp["Value"],
-            #         "user_id": "u1001",
-            #         'timestamp': str(datetime.now())
-            #     }
-            #     for resp in st.session_state.responses.values()
-            # ]
 
             # Save responses to a JSON file
             json_file_path = config_data.get('RESPONSE_JSON')
@@ -243,8 +276,10 @@ def main():
 
             st.write(f"Updated Level: {st.session_state.level_id}")
 
+
 if __name__ == "__main__":
     if not st.session_state.available_scale_ids:
         show_plotted_graph()
+        send_responses_to_database()
     else:
         main()
