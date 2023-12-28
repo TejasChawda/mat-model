@@ -9,7 +9,7 @@ import streamlit as st
 import pandas as pd
 import json
 
-config_file_path = '/Users/admin/Desktop/pythonStreamlitDemo/Files/Paths.txt'
+config_file_path = '/Users/testvagrant/Documents/mat-model/Files/Paths.txt'
 config_data = {}
 
 with open(config_file_path, 'r') as file:
@@ -98,8 +98,6 @@ def show_plotted_graph():
     )
     st.plotly_chart(fig, use_container_width=True)
 
-
-
 def update_scale_id():
     if not st.session_state.available_scale_ids:
         st.warning("No more available scale_ids.")
@@ -166,8 +164,8 @@ def update_level_id():
             # Check accuracy for Level 1
             filtered_questions = data[(data["Scale_Id"] == st.session_state.scale_id) & (data["Level_Id"] == 'L1')]
             if not filtered_questions.empty and accuracy < 70:
-                st.warning("You did not meet the accuracy threshold for Level 1. Terminating the application.")
-                st.stop()
+                st.warning("You did not meet the accuracy threshold for Level 1. Continuing to the next level.")
+                st.session_state.level_id = 'L2'
             elif filtered_questions.empty:
                 st.session_state.level_id = 'L2'
             # No need to explicitly check accuracy for 'L1' here
@@ -176,8 +174,6 @@ def update_level_id():
             st.session_state.level_id = 'L1'
 
     st.session_state.responses = {}
-    st.rerun()
-
 
 def save_responses_to_json(new_responses, json_file_path):
     try:
@@ -197,7 +193,6 @@ def save_responses_to_json(new_responses, json_file_path):
 def main():
     st.title("Testing Assessment")
     st.write(st.session_state.level_id + " - " + st.session_state.scale_id)
-
 
     form = st.form(key='questionnaire_form')
     filtered_questions = data[
@@ -221,17 +216,6 @@ def main():
             # Calculate accuracy with the latest responses
             accuracy = calculate_accuracy()
             st.success(f"Responses submitted successfully! Accuracy: {accuracy:.2f}%")
-
-            # new_responses = [
-            #     {
-            #         "Question_Id": resp["Question_Id"],
-            #         "Level_Id": resp["Level_Id"],
-            #         "Value": resp["Value"],
-            #         "user_id": "u1001",
-            #         'timestamp': str(datetime.now())
-            #     }
-            #     for resp in st.session_state.responses.values()
-            # ]
 
             # Save responses to a JSON file
             json_file_path = config_data.get('RESPONSE_JSON')

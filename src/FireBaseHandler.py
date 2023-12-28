@@ -30,24 +30,24 @@ class FirebaseHandler:
         firebase_admin.delete_app(firebase_admin.get_app())
 
 
-if __name__ == "__main__":
-    credentials_file = "/Users/admin/Desktop/pythonStreamlitDemo/ Config/FBCredentials.json"
-    database_url = "https://maturitymodel-cf384-default-rtdb.asia-southeast1.firebasedatabase.app/"
-    firebase_handler = FirebaseHandler(credentials_file, database_url)
-    user_id = "u1001"
-    response_data = [
-        {
-            "updatedTime": time.strftime("%d-%m-%Y-%H-%M", time.localtime()),
-            "scale_id": "TC",
-            "level_id": "L3",
-            "qid": "Q14",
-            "response": "Regularly",
-            "Value": 5,
-        }
-    ]
-    # Push data to Firebase
-    firebase_handler.push_response_to_db(user_id, response_data)
-    # Retrieve and print data from Firebase
-    # firebase_handler.get_users_response(user_id)
-    # Close the Firebase connection
-    firebase_handler.close_connection()
+# if __name__ == "__main__":
+#     credentials_file = "/Users/testvagrant/Documents/mat-model/ Config/FBCredentials.json"
+#     database_url = "https://maturitymodel-cf384-default-rtdb.asia-southeast1.firebasedatabase.app/"
+#     firebase_handler = FirebaseHandler(credentials_file, database_url)
+#     user_id = "u1001"
+#     response_data = [
+#         {
+#             "updatedTime": time.strftime("%d-%m-%Y-%H-%M", time.localtime()),
+#             "scale_id": "TC",
+#             "level_id": "L3",
+#             "qid": "Q14",
+#             "response": "Regularly",
+#             "Value": 5,
+#         }
+#     ]
+#     # Push data to Firebase
+#     firebase_handler.push_response_to_db(user_id, response_data)
+#     # Retrieve and print data from Firebase
+#     # firebase_handler.get_users_response(user_id)
+#     # Close the Firebase connection
+#     firebase_handler.close_connection()
