@@ -80,22 +80,19 @@ if not firebase_admin._apps:
                                    'Config/testapp-20a32-firebase-adminsdk-qf29b-35e854714d.json')
     firebase_admin.initialize_app(cred)
 
-st.title('Firebase Authentication with Streamlit')
-
-selected_option = option_menu(
-    menu_title=None,
-    options=["Register", "Login"],
-    icons=["door-open", "box-arrow-in-right"],
-    menu_icon="cast",
-    default_index=0,
-    orientation="horizontal",
-)
-
-if selected_option == "Login":
-    login_view()
-elif selected_option == "Register":
-    register_view()
-
-# Check the authentication status and render the homepage if authenticated
 if state.page == "Homepage":
     homepage.main()
+else:
+    st.title('User authentication')
+    selected_option = option_menu(
+        menu_title=None,
+        options=["Login", "Register"],
+        icons=["door-open", "box-arrow-in-right"],
+        menu_icon="cast",
+        default_index=0,
+        orientation="horizontal",
+    )
+    if selected_option == "Login":
+        login_view()
+    elif selected_option == "Register":
+        register_view()
