@@ -1,4 +1,3 @@
-import os
 import random
 import shutil
 import textwrap
@@ -101,7 +100,6 @@ def send_responses_to_database():
     except ValueError:
         app = initialize_app(cred)
 
-    # Assuming config_data is defined somewhere with the path to your JSON file
     json_file_path = config_data.get('RESPONSE_JSON')
 
     with open(json_file_path, 'r') as file:
