@@ -1,12 +1,21 @@
 import streamlit as st
-import firebase_admin
-from firebase_admin import credentials, auth
 import re
-import homepage
 from Session_state import get_session_state
 from streamlit_option_menu import option_menu
+import firebase_admin
+from firebase_admin import credentials, auth, firestore
+import que
 
 state = get_session_state()
+
+# Initialize Firebase Admin SDK
+if not firebase_admin._apps:
+    cred = credentials.Certificate(
+        '/Users/admin/Desktop/pythonStreamlitDemo/ Config/testapp-20a32-firebase-adminsdk-qf29b-35e854714d.json')
+    firebase_admin.initialize_app(cred)
+
+# Initialize Firestore
+db = firestore.client()
 
 
 def validate_email(mail_id):
@@ -18,30 +27,6 @@ def validate_password(pwd):
     return len(pwd) >= 8
 
 
-def authenticate_user(mail):
-    try:
-        user = auth.get_user_by_email(mail)
-        if user is not None:
-            state.authenticated_user = user
-            state.page = "Homepage"
-            st.experimental_rerun()
-        else:
-            st.write("something is wrong")
-    except auth.UserNotFoundError:
-        st.warning("User not found. Please register first.")
-    except Exception as e:
-        st.error(f"Authentication failed: {e}")
-
-
-def register_user(mail, pwd):
-    try:
-        user = auth.create_user(email=mail, password=pwd)
-        st.success("Registration successful!")
-        return user
-    except Exception as e:
-        st.error(f"User registration failed: {e}")
-
-
 def login_view():
     st.subheader("Login")
     email = st.text_input('Email:')
@@ -49,7 +34,9 @@ def login_view():
     login_button = st.button('Login')
 
     if login_button:
-        authenticate_user(email)
+        login(email, password)
+        state.page = "Homepage"
+        st.rerun()
 
 
 def register_view():
@@ -70,18 +57,60 @@ def register_view():
 
     if register_button:
         if password == confirm_password:
-            register_user(email, password)
+            signup(email, password, full_name, phone_number, organization)
         else:
             st.error("Password and Confirm Password do not match. Please try again.")
 
 
-if not firebase_admin._apps:
-    cred = credentials.Certificate('/Users/admin/Desktop/pythonStreamlitDemo/ '
-                                   'Config/testapp-20a32-firebase-adminsdk-qf29b-35e854714d.json')
-    firebase_admin.initialize_app(cred)
+def signup(email, password, name, ph, org):
+    try:
+        # Create user in Firebase Authentication
+        user = auth.create_user(
+            email=email,
+            password=password,
+        )
+        # Create a new document in the 'users' collection
+        user_ref = db.collection('users').document(user.uid)
+        user_ref.set({
+            'email': email,
+            'name': name,
+            'password': password,
+            'phone_number': ph,
+            'organization': org
+            # Add more fields as needed
+        })
+        print(f"User {email} successfully created with ID: {user.uid}")
+    except Exception as e:
+        print(f"Error creating user: {e}")
+
+
+def login(email, password):
+    try:
+        # Get user by email from Firebase Authentication
+        user = auth.get_user_by_email(email)
+        # Check if the user document exists in the 'users' collection
+        user_ref = db.collection('users').document(user.uid)
+        user_data = user_ref.get()
+        if not user_data.exists:
+            print("User does not exist. Please sign up.")
+            return
+        # Get the stored password from the Firestore document
+        stored_password = user_data.get('password')
+        # Compare the provided password with the stored password
+        if password == stored_password:
+            print(f"User {email} successfully authenticated.")
+        else:
+            print("Incorrect password.")
+    except auth.UserNotFoundError:
+        print("User not found. Please sign up.")
+    except Exception as e:
+        print(f"Error during login: {e}")
+
 
 if state.page == "Homepage":
-    homepage.main()
+    # homepage.main()
+
+    que.main()
 else:
     st.title('User authentication')
     selected_option = option_menu(

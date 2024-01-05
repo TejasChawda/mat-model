@@ -1,3 +1,4 @@
+import io
 import random
 import shutil
 import textwrap
@@ -51,19 +52,19 @@ if 'scale_id' not in st.session_state:
 
 OPTIONS_Values = {
     "Regularly": 50,
-    "Sometimes": 30,
-    "Not Started": 10,
-    "Not Applicable": 1,
+    "Sometimes": 40,
+    "Not Started": 20,
+    "Not Applicable": 10,
 }
 
 
 def show_plotted_graph():
     df = pd.read_csv(config_data.get('DATA'))
-    df['Points'] = df['Scale'].apply(lambda x: textwrap.fill(str(x), width=30))
+    df['Points'] = df['Points'].str.wrap(30)
     df['Points'] = df['Points'].str.replace('\n', '<br>')
-    df['Scale'] = df['Scale'].apply(lambda x: textwrap.fill(str(x), width=10))
+    df['Scale'] = df['Scale'].str.wrap(10)
     df['Scale'] = df['Scale'].str.replace('\n', '<br>')
-
+    df['Value'] = df['Value']
     custom_colors = [
         'rgb(255, 0, 0)',  # Red
         'rgb(255, 80, 0)',  # Orange-Red
@@ -74,20 +75,35 @@ def show_plotted_graph():
         'rgb(150, 220, 0)',  # Lime Green
         'rgb(0, 128, 0)', 'rgb(0, 128, 0)'
     ]
-
     fig = px.sunburst(
         data_frame=df,
         path=['Scale', 'Levels', 'Points'],
         values='Value',
         maxdepth=-2,
-        width=900,
-        height=1000,
+        width=800,
+        height=800,
         color='Value',
         custom_data=['Points', 'Questions'],
-        color_continuous_scale=custom_colors,
+        color_continuous_scale=custom_colors,  # Show label, value, and parent on hover
     )
-
+    fig.update_traces(
+        textfont_size=12,
+        insidetextorientation='radial',
+        textinfo='label+text+percent entry',
+    )
+    fig.update_layout(
+        margin=dict(l=10, r=10, b=10, t=10),  # Adjust the values to control spacing
+    )
     st.plotly_chart(fig)
+
+    buffer = io.BytesIO()
+    fig.write_image(file=buffer, format="pdf")
+    st.download_button(
+        label="Download PDF",
+        data=buffer,
+        file_name="figure.pdf",
+        mime="application/pdf",
+    )
 
 
 def send_responses_to_database():
@@ -183,7 +199,7 @@ def update_csv_from_json(csv_file_path, json_file_path):
 
 def calculate_accuracy():
     earned_values = sum([resp["Value"] for resp in st.session_state.responses.values()])
-    total_values = len(st.session_state.responses) * 5
+    total_values = len(st.session_state.responses) * 50
     accuracy = (earned_values / total_values) * 100 if total_values != 0 else 0
     return accuracy
 
@@ -250,7 +266,7 @@ def save_responses_to_json(new_responses, json_file_path):
 
 
 def main():
-    shutil.copyfile(config_data.get('MODEL'), config_data.get('DATA'))
+    # shutil.copyfile(config_data.get('MODEL'), config_data.get('DATA'))
 
     st.title("Testing Assessment")
     st.write(st.session_state.level_id + " - " + st.session_state.scale_id)
@@ -290,6 +306,8 @@ def main():
             update_level_id()
 
             st.write(f"Updated Level: {st.session_state.level_id}")
+
+
 
 
 if __name__ == "__main__":
