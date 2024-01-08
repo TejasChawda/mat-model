@@ -308,8 +308,6 @@ def main():
             st.write(f"Updated Level: {st.session_state.level_id}")
 
 
-
-
 if __name__ == "__main__":
     if not st.session_state.available_scale_ids:
         show_plotted_graph()
