@@ -1,23 +1,19 @@
 import io
 import random
-import shutil
-import textwrap
-
+import paths
 import plotly.express as px
 import streamlit as st
 import pandas as pd
 import json
 from firebase_admin import credentials, firestore, initialize_app, get_app
+import options
+import form_decorators
 
 config_file_path = '/Users/admin/Desktop/pythonStreamlitDemo/Files/Paths.txt'
-config_data = {}
 
-with open(config_file_path, 'r') as file:
-    for line in file:
-        key, value = line.strip().split('=')
-        config_data[key.strip()] = value.strip()
+path = paths.read_paths(config_file_path)
 
-data = pd.read_csv(config_data.get('MODEL'))
+data = pd.read_csv(path.get('MODEL'))
 
 init_level = 2
 flag = 0
@@ -30,8 +26,15 @@ max_level = max(split_levels_int)
 
 scale_ids = list(data['Scale_Id'].unique())
 
+scale_count = len(scale_ids)
+level_count = len(levels)
+total_pages = scale_count * level_count
+
 if 'available_scale_ids' not in st.session_state:
     st.session_state.available_scale_ids = scale_ids
+
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 1
 
 # Check if the initial scale_id is already set
 if 'initial_scale_id' not in st.session_state:
@@ -50,16 +53,9 @@ if 'lower_level_modify' not in st.session_state:
 if 'scale_id' not in st.session_state:
     st.session_state.scale_id = st.session_state.initial_scale_id
 
-OPTIONS_Values = {
-    "Regularly": 50,
-    "Sometimes": 40,
-    "Not Started": 20,
-    "Not Applicable": 10,
-}
-
 
 def show_plotted_graph():
-    df = pd.read_csv(config_data.get('DATA'))
+    df = pd.read_csv(path.get('DATA'))
     df['Points'] = df['Points'].str.wrap(30)
     df['Points'] = df['Points'].str.replace('\n', '<br>')
     df['Scale'] = df['Scale'].str.wrap(10)
@@ -116,7 +112,7 @@ def send_responses_to_database():
     except ValueError:
         app = initialize_app(cred)
 
-    json_file_path = config_data.get('RESPONSE_JSON')
+    json_file_path = path.get('RESPONSE_JSON')
 
     with open(json_file_path, 'r') as file:
         json_data = file.read()
@@ -156,17 +152,6 @@ def update_scale_id():
 
     # Reset other session state variables if needed
     st.session_state.responses = {}
-
-
-# def update_levels_below_init_level(data_file_path, scale_id, start):
-#     df = pd.read_csv(data_file_path)
-#
-#     for level in split_levels_int:
-#         while level < start:
-#             mask = (df['Levels'] == f"level {level}") & (df['Scale_Id'] == scale_id)
-#             df[mask, 'Value'] = max(OPTIONS_Values.values())
-#
-#     df.to_csv(data_file_path, index=False)
 
 
 def update_csv_from_json(csv_file_path, json_file_path):
@@ -279,12 +264,15 @@ def main():
         st.warning("No questions found for the provided Scale ID and Level ID.")
         update_level_id()
     else:
+        form_decorators.dynamic_progress_bar(st.session_state.current_page, total_pages)
+
         for _, question in filtered_questions.iterrows():
             widget_key = f"{question['Q_Id']}_{st.session_state.level_id}"  # Use both Q_Id and level_id as a key
-            option = form.radio(question["Questions"], list(OPTIONS_Values.keys()), key=widget_key)
+            option = form.radio(question["Questions"], list(choice.name for choice in options.Options), key=widget_key)
 
             # if option is not None:
-            option_values = OPTIONS_Values[option]
+            selected_option = options.Options[option] if option else None
+            option_values = selected_option.value if selected_option else None
 
             # Store the response for each question with Question_ID
             st.session_state.responses[widget_key] = {"Question_Id": question['Q_Id'], "Value": option_values,
@@ -293,14 +281,17 @@ def main():
 
         # Outside the for loop
         if form.form_submit_button("Submit Responses") and len(st.session_state.responses) == len(filtered_questions):
+            form_decorators.loader("Submitting.........")
+            st.session_state.current_page += 1
+
             # Calculate accuracy with the latest responses
             accuracy = calculate_accuracy()
             st.success(f"Responses submitted successfully! Accuracy: {accuracy:.2f}%")
 
             # Save responses to a JSON file
-            json_file_path = config_data.get('RESPONSE_JSON')
+            json_file_path = path.get('RESPONSE_JSON')
             save_responses_to_json(list(st.session_state.responses.values()), json_file_path)
-            update_csv_from_json(config_data.get('DATA'), json_file_path)
+            update_csv_from_json(path.get('DATA'), json_file_path)
 
             # Move the level update logic outside the form submission block
             update_level_id()
