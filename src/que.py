@@ -8,47 +8,19 @@ from firebase_admin import credentials, firestore, initialize_app, get_app
 import options
 import form_decorators
 import paths
+import data_frame
+import Session_state
 
+state = Session_state.get_session_state()
 
 data = pd.read_csv(paths.read_paths().get('MODEL'))
 
-init_level = 2
-flag = 0
-min_level = 1
+levels = data_frame.get_levels(data)
+max_level = data_frame.get_max_level(levels)
 
-levels = data['Levels'].unique()
-split_levels = [l.split(" ")[1] for l in levels]
-split_levels_int = [int(level) for level in split_levels]
-max_level = max(split_levels_int)
-
-scale_ids = list(data['Scale_Id'].unique())
-
-scale_count = len(scale_ids)
+scale_count = len(Session_state.scale_ids)
 level_count = len(levels)
 total_pages = scale_count * level_count
-
-if 'available_scale_ids' not in st.session_state:
-    st.session_state.available_scale_ids = scale_ids
-
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = 1
-
-# Check if the initial scale_id is already set
-if 'initial_scale_id' not in st.session_state:
-    # Set the initial scale_id randomly
-    st.session_state.initial_scale_id = random.choice(scale_ids)
-
-# Session state initialization
-if 'responses' not in st.session_state:
-    st.session_state.responses = {}
-if 'level_id' not in st.session_state:
-    st.session_state.level_id = f'L{init_level}'
-if 'lower_level_modify' not in st.session_state:
-    st.session_state.lower_level_modify = False
-
-# Set the initial scale_id
-if 'scale_id' not in st.session_state:
-    st.session_state.scale_id = st.session_state.initial_scale_id
 
 
 def show_plotted_graph():
@@ -127,28 +99,29 @@ def send_responses_to_database():
 
 
 def update_scale_id():
-    if not st.session_state.available_scale_ids:
-        st.warning("No more available scale_ids.")
+    if not state.available_scale_ids:
+        st.warning("No more available Session_state.scale_ids.")
         return
 
-    # Remove the current scale_id from available_scale_ids
-    if st.session_state.scale_id in st.session_state.available_scale_ids:
-        st.session_state.available_scale_ids.remove(st.session_state.scale_id)
+    # Remove the current scale_id from available_Session_state.scale_ids
+    if state.scale_id in state.available_scale_ids:
+        state.available_scale_ids.remove(state.scale_id)
 
-    # Check if there are still available scale_ids
-    if not st.session_state.available_scale_ids:
-        st.warning("No more available scale_ids.")
+
+    # Check if there are still available Session_state.scale_ids
+    if not state.available_scale_ids:
+        st.warning("No more available Session_state.scale_ids.")
         return
 
-    # Choose a new scale_id randomly from the remaining available scale_ids
-    chosen_scale_id = random.choice(st.session_state.available_scale_ids)
+    # Choose a new scale_id randomly from the remaining available Session_state.scale_ids
+    chosen_scale_id = random.choice(state.available_scale_ids)
 
     # Update session state variables
-    st.session_state.scale_id = chosen_scale_id
-    st.session_state.level_id = f'L{init_level}'
+    state.scale_id = chosen_scale_id
+    state.level_id = f'L{Session_state.init_level}'
 
     # Reset other session state variables if needed
-    st.session_state.responses = {}
+    state.responses = {}
 
 
 def update_csv_from_json(csv_file_path, json_file_path):
@@ -173,61 +146,54 @@ def update_csv_from_json(csv_file_path, json_file_path):
     df.to_csv(csv_file_path, index=False)
 
 
-# def do_update():
-#     if st.session_state.lower_level_modify:
-#         update_levels_below_init_level(config_data.get('DATA'), st.session_state.scale_id, init_level)
-#         st.session_state.lower_level_modify = False
-
-
 def calculate_accuracy():
-    earned_values = sum([resp["Value"] for resp in st.session_state.responses.values()])
-    total_values = len(st.session_state.responses) * 50
+    earned_values = sum([resp["Value"] for resp in state.responses.values()])
+    total_values = len(state.responses) * 50
     accuracy = (earned_values / total_values) * 100 if total_values != 0 else 0
     return accuracy
 
 
 def update_level_id():
     accuracy = calculate_accuracy()
-    global flag
 
     if accuracy > 70:
-        new_level_id = int(st.session_state.level_id[1:]) + 1
-        new_max_level = init_level
+        new_level_id = int(state.level_id[1:]) + 1
+        new_max_level = Session_state.init_level
 
         if new_level_id > max_level:
             update_scale_id()
-        elif int(st.session_state.level_id[1:]) == 1:
-            flag = 1
+        elif int(state.level_id[1:]) == 1:
+            Session_state.flag = 1
             if new_level_id >= new_max_level:
                 update_scale_id()
-            st.session_state.level_id = f"L{new_level_id}"
-        elif flag == 1:
+            state.level_id = f"L{new_level_id}"
+        elif Session_state.flag == 1:
             if new_level_id < new_max_level:
-                st.session_state.level_id = f"{new_level_id}"
+                state.level_id = f"{new_level_id}"
             else:
                 update_scale_id()
-            flag = 0
+            Session_state.flag = 0
         else:
-            # st.session_state.lower_level_modify = True
+            # state.lower_level_modify = True
             # do_update()
-            st.session_state.level_id = f'L{new_level_id}'
+            state.level_id = f'L{new_level_id}'
     else:
-        if int(st.session_state.level_id[1:]) == init_level:
+        if int(state.level_id[1:]) == Session_state.init_level:
             new_level_id = 1
-            st.session_state.level_id = f"L{new_level_id}"
+            state.level_id = f"L{new_level_id}"
             filtered_questions = data[
-                (data["Scale_Id"] == st.session_state.scale_id) & (data["Level_Id"] == st.session_state.level_id)]
+                (data["Scale_Id"] == state.scale_id) & (data["Level_Id"] == state.level_id)]
             if filtered_questions.empty:
                 update_scale_id()
-        elif st.session_state.level_id == f'L{min_level}':
+        elif state.level_id == f'L{Session_state.min_level}':
             filtered_questions = data[
-                (data["Scale_Id"] == st.session_state.scale_id) & (data["Level_Id"] == st.session_state.level_id)]
+                (data["Scale_Id"] == state.scale_id) & (data["Level_Id"] == state.level_id)]
             if filtered_questions.empty:
-                st.session_state.level_id = f'L{min_level + 1}'
+                state.level_id = f'L{Session_state.min_level + 1}'
         else:
             update_scale_id()
 
-    st.session_state.responses = {}
+    state.responses = {}
     st.rerun()
 
 
@@ -248,23 +214,21 @@ def save_responses_to_json(new_responses, json_file_path):
 
 
 def main():
-    # shutil.copyfile(config_data.get('MODEL'), config_data.get('DATA'))
 
     st.title("Testing Assessment")
-    st.write(st.session_state.level_id + " - " + st.session_state.scale_id)
+    st.write(state.level_id + " - " + state.scale_id)
 
     form = st.form(key='questionnaire_form')
     filtered_questions = data[
-        (data["Scale_Id"] == st.session_state.scale_id) & (data["Level_Id"] == st.session_state.level_id)]
+        (data["Scale_Id"] == state.scale_id) & (data["Level_Id"] == state.level_id)]
 
     if filtered_questions.empty:
         st.warning("No questions found for the provided Scale ID and Level ID.")
         update_level_id()
     else:
-        form_decorators.dynamic_progress_bar(st.session_state.current_page, total_pages)
 
         for _, question in filtered_questions.iterrows():
-            widget_key = f"{question['Q_Id']}_{st.session_state.level_id}"  # Use both Q_Id and level_id as a key
+            widget_key = f"{question['Q_Id']}_{state.level_id}"  # Use both Q_Id and level_id as a key
             option = form.radio(question["Questions"], list(choice.name for choice in options.Options), key=widget_key)
 
             # if option is not None:
@@ -272,14 +236,14 @@ def main():
             option_values = selected_option.value if selected_option else None
 
             # Store the response for each question with Question_ID
-            st.session_state.responses[widget_key] = {"Question_Id": question['Q_Id'], "Value": option_values,
-                                                      "Level_Id": st.session_state.level_id,
-                                                      "Scale": st.session_state.scale_id}
+            state.responses[widget_key] = {"Question_Id": question['Q_Id'], "Value": option_values,
+                                                      "Level_Id": state.level_id,
+                                                      "Scale": state.scale_id}
 
         # Outside the for loop
-        if form.form_submit_button("Submit Responses") and len(st.session_state.responses) == len(filtered_questions):
+        if form.form_submit_button("Submit Responses") and len(state.responses) == len(filtered_questions):
             form_decorators.loader("Submitting.........")
-            st.session_state.current_page += 1
+            state.current_page += 1
 
             # Calculate accuracy with the latest responses
             accuracy = calculate_accuracy()
@@ -287,17 +251,17 @@ def main():
 
             # Save responses to a JSON file
             json_file_path = paths.read_paths().get('RESPONSE_JSON')
-            save_responses_to_json(list(st.session_state.responses.values()), json_file_path)
+            save_responses_to_json(list(state.responses.values()), json_file_path)
             update_csv_from_json(paths.read_paths().get('DATA'), json_file_path)
 
             # Move the level update logic outside the form submission block
             update_level_id()
 
-            st.write(f"Updated Level: {st.session_state.level_id}")
+            st.write(f"Updated Level: {state.level_id}")
 
 
 if __name__ == "__main__":
-    if not st.session_state.available_scale_ids:
+    if not state.available_scale_ids:
         show_plotted_graph()
         send_responses_to_database()
     else:
