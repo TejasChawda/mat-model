@@ -1,6 +1,5 @@
 import io
 import random
-import paths
 import plotly.express as px
 import streamlit as st
 import pandas as pd
@@ -8,12 +7,10 @@ import json
 from firebase_admin import credentials, firestore, initialize_app, get_app
 import options
 import form_decorators
+import paths
 
-config_file_path = '/Users/admin/Desktop/pythonStreamlitDemo/Files/Paths.txt'
 
-path = paths.read_paths(config_file_path)
-
-data = pd.read_csv(path.get('MODEL'))
+data = pd.read_csv(paths.read_paths().get('MODEL'))
 
 init_level = 2
 flag = 0
@@ -55,7 +52,7 @@ if 'scale_id' not in st.session_state:
 
 
 def show_plotted_graph():
-    df = pd.read_csv(path.get('DATA'))
+    df = pd.read_csv(paths.read_paths().get('DATA'))
     df['Points'] = df['Points'].str.wrap(30)
     df['Points'] = df['Points'].str.replace('\n', '<br>')
     df['Scale'] = df['Scale'].str.wrap(10)
@@ -112,7 +109,7 @@ def send_responses_to_database():
     except ValueError:
         app = initialize_app(cred)
 
-    json_file_path = path.get('RESPONSE_JSON')
+    json_file_path = paths.read_paths().get('RESPONSE_JSON')
 
     with open(json_file_path, 'r') as file:
         json_data = file.read()
@@ -289,9 +286,9 @@ def main():
             st.success(f"Responses submitted successfully! Accuracy: {accuracy:.2f}%")
 
             # Save responses to a JSON file
-            json_file_path = path.get('RESPONSE_JSON')
+            json_file_path = paths.read_paths().get('RESPONSE_JSON')
             save_responses_to_json(list(st.session_state.responses.values()), json_file_path)
-            update_csv_from_json(path.get('DATA'), json_file_path)
+            update_csv_from_json(paths.read_paths().get('DATA'), json_file_path)
 
             # Move the level update logic outside the form submission block
             update_level_id()
