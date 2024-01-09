@@ -260,9 +260,3 @@ def main():
             st.write(f"Updated Level: {state.level_id}")
 
 
-if __name__ == "__main__":
-    if not state.available_scale_ids:
-        show_plotted_graph()
-        send_responses_to_database()
-    else:
-        main()

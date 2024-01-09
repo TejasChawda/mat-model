@@ -35,7 +35,7 @@ def login_view():
 
     if login_button:
         login(email, password)
-        state.page = "Homepage"
+        state.page = "Assessment"
         st.rerun()
 
 
@@ -107,9 +107,12 @@ def login(email, password):
         print(f"Error during login: {e}")
 
 
-if state.page == "Homepage":
-    # homepage.main()
-    que.main()
+if state.page == "Assessment":
+    if not state.available_scale_ids:
+        que.show_plotted_graph()
+        que.send_responses_to_database()
+    else:
+        que.main()
 else:
     st.title('User authentication')
     selected_option = option_menu(
