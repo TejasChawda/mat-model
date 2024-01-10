@@ -4,7 +4,8 @@ from Session_state import get_session_state
 from streamlit_option_menu import option_menu
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
-import que
+import Application
+import Results
 
 state = get_session_state()
 
@@ -109,10 +110,10 @@ def login(email, password):
 
 if state.page == "Assessment":
     if not state.available_scale_ids:
-        que.show_plotted_graph()
-        que.send_responses_to_database()
+        Results.show_plotted_graph()
+        Results.send_responses_to_database()
     else:
-        que.main()
+        Application.main()
 else:
     st.title('User authentication')
     selected_option = option_menu(

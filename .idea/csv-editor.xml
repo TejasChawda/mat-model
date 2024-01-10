@@ -10,21 +10,7 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="/Files/Data/model.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="/Files/Models/model.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="$PROJECT_DIR$/../model.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

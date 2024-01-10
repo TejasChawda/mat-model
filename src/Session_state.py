@@ -15,6 +15,9 @@ data = pd.read_csv(paths.read_paths().get('MODEL'))
 s_ids = data_frame.get_scale_ids(data)
 scale_ids = list(s_ids)
 
+levels = data_frame.get_levels(data)
+max_level = data_frame.get_max_level(levels)
+
 
 def get_session_state():
     if not hasattr(st.session_state, "initialized"):

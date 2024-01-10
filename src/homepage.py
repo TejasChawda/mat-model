@@ -1,6 +1,6 @@
 import streamlit as st
 from Session_state import get_session_state
-import que
+import Application
 
 # Initialize session state
 state = get_session_state()
