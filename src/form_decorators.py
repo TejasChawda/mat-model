@@ -1,10 +1,11 @@
-import time
 import streamlit as st
+import hydralit_components as hc
+import time
 
 
 def loader(message):
-    with st.spinner(message):
-        time.sleep(2)
+    with hc.HyLoader(message,hc.Loaders.standard_loaders,index=[2]):
+        time.sleep(3)
 
 
 def dynamic_progress_bar(current_form, total):

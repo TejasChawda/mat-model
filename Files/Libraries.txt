@@ -7,3 +7,4 @@ json
 io
 random
 re
+bcrypt

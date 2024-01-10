@@ -1,13 +1,26 @@
+import bcrypt
 import streamlit as st
 import re
 from Session_state import get_session_state
 from streamlit_option_menu import option_menu
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
-import Application
-import Results
+import homepage
 
 state = get_session_state()
+
+
+def encrypt_password(password):
+    # Generate a salt and hash the password
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password.decode('utf-8')
+
+
+def verify_password(entered_password, stored_password):
+    # Check if the entered password matches the stored hashed password
+    return bcrypt.checkpw(entered_password.encode('utf-8'), stored_password.encode('utf-8'))
+
 
 # Initialize Firebase Admin SDK
 if not firebase_admin._apps:
@@ -29,14 +42,16 @@ def validate_password(pwd):
 
 
 def login_view():
+    global user_identifier
     st.subheader("Login")
     email = st.text_input('Email:')
     password = st.text_input('Password:', type='password')
     login_button = st.button('Login')
 
     if login_button:
-        login(email, password)
-        state.page = "Assessment"
+        uem = login(email, password)
+        state.authenticated_user = uem
+        state.page = "Homepage"
         st.rerun()
 
 
@@ -75,7 +90,7 @@ def signup(email, password, name, ph, org):
         user_ref.set({
             'email': email,
             'name': name,
-            'password': password,
+            'password': encrypt_password(password),
             'phone_number': ph,
             'organization': org
             # Add more fields as needed
@@ -98,8 +113,9 @@ def login(email, password):
         # Get the stored password from the Firestore document
         stored_password = user_data.get('password')
         # Compare the provided password with the stored password
-        if password == stored_password:
+        if verify_password(password, stored_password):
             print(f"User {email} successfully authenticated.")
+            return user.email
         else:
             print("Incorrect password.")
     except auth.UserNotFoundError:
@@ -108,12 +124,9 @@ def login(email, password):
         print(f"Error during login: {e}")
 
 
-if state.page == "Assessment":
-    if not state.available_scale_ids:
-        Results.show_plotted_graph()
-        Results.send_responses_to_database()
-    else:
-        Application.main()
+if state.page == "Homepage":
+    homepage.display_homepage()
+
 else:
     st.title('User authentication')
     selected_option = option_menu(

@@ -6,11 +6,11 @@ import Application
 state = get_session_state()
 
 
-def main():
+def display_homepage():
     st.title("Assessment Homepage")
 
     if state.authenticated_user is not None:
-        logged_in_user = str(state.authenticated_user.email.split('@')[0])
+        logged_in_user = str(state.authenticated_user.split('@')[0])
         user_clicked = st.sidebar.button(logged_in_user, key="user_button")
         if user_clicked:
             profile_options()

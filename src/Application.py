@@ -1,11 +1,12 @@
 import streamlit as st
-import pandas as pd
 import options
 import form_decorators
 import paths
 import Session_state
 import Results
 import Update
+
+
 
 state = Session_state.get_session_state()
 
@@ -44,7 +45,7 @@ def main():
 
         # Outside the for loop
         if form.form_submit_button("Submit Responses") and len(state.responses) == len(filtered_questions):
-            form_decorators.loader("Submitting.........")
+            form_decorators.loader("Preparing next sets of question")
             state.current_page += 1
 
             # Calculate accuracy with the latest responses
