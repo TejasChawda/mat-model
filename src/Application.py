@@ -6,8 +6,6 @@ import Session_state
 import Results
 import Update
 
-
-
 state = Session_state.get_session_state()
 
 data = Session_state.data
@@ -18,6 +16,11 @@ total_pages = scale_count * level_count
 
 
 def main():
+
+    st.write(state.available_scale_ids)
+    st.write(state.page)
+
+
     st.title("Testing Assessment")
     st.write(state.level_id + " - " + state.scale_id)
 
@@ -45,8 +48,12 @@ def main():
 
         # Outside the for loop
         if form.form_submit_button("Submit Responses") and len(state.responses) == len(filtered_questions):
+
+            if not state.available_scale_ids:
+                state.page = "Graph"
+                st.rerun()
+
             form_decorators.loader("Preparing next sets of question")
-            state.current_page += 1
 
             # Calculate accuracy with the latest responses
             accuracy = Results.calculate_accuracy()
@@ -61,3 +68,5 @@ def main():
             Update.update_level_id()
 
             st.write(f"Updated Level: {state.level_id}")
+
+

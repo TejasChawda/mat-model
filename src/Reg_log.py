@@ -5,7 +5,8 @@ from Session_state import get_session_state
 from streamlit_option_menu import option_menu
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
-import homepage
+import homepage, Application
+import Results
 
 state = get_session_state()
 
@@ -42,7 +43,6 @@ def validate_password(pwd):
 
 
 def login_view():
-    global user_identifier
     st.subheader("Login")
     email = st.text_input('Email:')
     password = st.text_input('Password:', type='password')
@@ -126,7 +126,11 @@ def login(email, password):
 
 if state.page == "Homepage":
     homepage.display_homepage()
-
+elif state.page == "Assessment":
+    Application.main()
+elif state.page == "Graph":
+    Results.show_plotted_graph()
+    Results.send_responses_to_database()
 else:
     st.title('User authentication')
     selected_option = option_menu(
