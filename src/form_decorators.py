@@ -1,11 +1,15 @@
 import streamlit as st
 import hydralit_components as hc
 import time
+from streamlit_lottie import st_lottie
+import json
 
 
-def loader(message):
-    with hc.HyLoader(message,hc.Loaders.standard_loaders,index=[2]):
-        time.sleep(3)
+def loader():
+    with open("/Users/admin/Desktop/pythonStreamlitDemo/Files/loader.json") as source:
+        animation = json.load(source)
+
+    st_lottie(animation)
 
 
 def dynamic_progress_bar(current_form, total):

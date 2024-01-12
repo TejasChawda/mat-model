@@ -55,7 +55,7 @@ def main():
                 state.page = "Graph"
                 st.rerun()
 
-            form_decorators.loader("Preparing next sets of question")
+            form_decorators.loader()
 
             # Calculate accuracy with the latest responses
             accuracy = Results.calculate_accuracy()
