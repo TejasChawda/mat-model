@@ -1,3 +1,4 @@
+import datetime
 import json
 import pandas as pd
 import plotly.express as px
@@ -6,6 +7,8 @@ import io
 import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app, get_app
 import Session_state
+from datetime import datetime, date
+
 
 state = Session_state.get_session_state()
 
@@ -78,10 +81,15 @@ def send_responses_to_database():
 
     # Send the entire string to Firestore
     data = {
+        'date': str(date.today()),
         'userResponse': response_string
     }
+
+    now = datetime.now()
+    formatted_time = now.strftime("%H:%M:%S")
+    doc_name = str(formatted_time) + "_" + state.user_id
     db = firestore.client()
-    doc_ref = db.collection('user_responses').document()
+    doc_ref = db.collection('user_responses').document(doc_name)
     doc_ref.set(data)
 
 
@@ -106,3 +114,6 @@ def calculate_accuracy():
     total_values = len(state.responses) * 50
     accuracy = (earned_values / total_values) * 100 if total_values != 0 else 0
     return accuracy
+
+
+# def show_history():

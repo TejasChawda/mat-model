@@ -50,7 +50,8 @@ def login_view():
 
     if login_button:
         uem = login(email, password)
-        state.authenticated_user = uem
+        state.authenticated_user = uem.email
+        state.user_id = uem.uid
         state.page = "Homepage"
         st.rerun()
 
@@ -115,7 +116,7 @@ def login(email, password):
         # Compare the provided password with the stored password
         if verify_password(password, stored_password):
             print(f"User {email} successfully authenticated.")
-            return user.email
+            return user
         else:
             print("Incorrect password.")
     except auth.UserNotFoundError:

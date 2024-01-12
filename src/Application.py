@@ -16,10 +16,9 @@ total_pages = scale_count * level_count
 
 
 def main():
-
     st.write(state.available_scale_ids)
     st.write(state.page)
-
+    st.write(state.user_id)
 
     st.title("Testing Assessment")
     st.write(state.level_id + " - " + state.scale_id)
@@ -42,9 +41,12 @@ def main():
             option_values = selected_option.value if selected_option else None
 
             # Store the response for each question with Question_ID
-            state.responses[widget_key] = {"Question_Id": question['Q_Id'], "Value": option_values,
-                                           "Level_Id": state.level_id,
-                                           "Scale": state.scale_id}
+            state.responses[widget_key] = {
+                "Question_Id": question['Q_Id'],
+                "Value": option_values,
+                "Level_Id": state.level_id,
+                "Scale": state.scale_id
+            }
 
         # Outside the for loop
         if form.form_submit_button("Submit Responses") and len(state.responses) == len(filtered_questions):
@@ -68,5 +70,3 @@ def main():
             Update.update_level_id()
 
             st.write(f"Updated Level: {state.level_id}")
-
-
