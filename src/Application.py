@@ -1,6 +1,5 @@
 import streamlit as st
 import options
-import form_decorators
 import paths
 import Session_state
 import Results
@@ -10,17 +9,17 @@ state = Session_state.get_session_state()
 
 data = Session_state.data
 
-scale_count = len(Session_state.scale_ids)
-level_count = len(Session_state.levels)
-total_pages = scale_count * level_count
-
-
 def main():
-    st.write(state.available_scale_ids)
-    st.write(state.page)
-    st.write(state.user_id)
-
     st.title("Testing Assessment")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.progress(state.progress)
+
+    with col2:
+        st.write(str(state.progress) + "%")
+
     st.write(state.level_id + " - " + state.scale_id)
 
     form = st.form(key='questionnaire_form')
@@ -55,18 +54,13 @@ def main():
                 state.page = "Graph"
                 st.rerun()
 
-            form_decorators.loader()
-
-            # Calculate accuracy with the latest responses
-            accuracy = Results.calculate_accuracy()
-            st.success(f"Responses submitted successfully! Accuracy: {accuracy:.2f}%")
+            # accuracy = Results.calculate_accuracy()
+            # st.success(f"Responses submitted successfully! Accuracy: {accuracy:.2f}%")
 
             # Save responses to a JSON file
             json_file_path = paths.read_paths().get('RESPONSE_JSON')
             Results.save_responses_to_json(list(state.responses.values()), json_file_path)
             Update.update_csv_from_json(paths.read_paths().get('DATA'), json_file_path)
 
-            # Move the level update logic outside the form submission block
             Update.update_level_id()
-
             st.write(f"Updated Level: {state.level_id}")

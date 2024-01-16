@@ -33,5 +33,9 @@ def get_session_state():
         st.session_state.responses = {}
         st.session_state.level_id = f'L{init_level}'
         st.session_state.scale_id = st.session_state.initial_scale_id
+        st.session_state.scale_count = len(scale_ids)
+        st.session_state.level_count = len(levels)
+        st.session_state.progress = 0
+        st.session_state.progress_for_each_scale = round(100 / st.session_state.scale_count)
 
     return st.session_state

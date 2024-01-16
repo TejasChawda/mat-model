@@ -7,6 +7,7 @@ import firebase_admin
 from firebase_admin import credentials, auth, firestore
 import homepage, Application
 import Results
+import form_decorators
 
 state = get_session_state()
 
@@ -52,6 +53,7 @@ def login_view():
         uem = login(email, password)
         state.authenticated_user = uem.email
         state.user_id = uem.uid
+        # form_decorators.loader("Loading.......")
         state.page = "Homepage"
         st.rerun()
 

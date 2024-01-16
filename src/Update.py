@@ -7,6 +7,7 @@ import Session_state
 import streamlit as st
 
 import Results
+import form_decorators
 
 state = Session_state.get_session_state()
 
@@ -58,6 +59,12 @@ def update_csv_from_json(csv_file_path, json_file_path):
     df.to_csv(csv_file_path, index=False)
 
 
+def loadin_screen():
+    loading_screen = st.empty()
+    loading_screen.subheader("please wait while we load next questions")
+    form_decorators.loader("Loading......")
+
+
 def update_level_id():
     accuracy = Results.calculate_accuracy()
 
@@ -66,16 +73,19 @@ def update_level_id():
         new_max_level = Session_state.init_level
 
         if new_level_id > Session_state.max_level:
+            state.progress += state.progress_for_each_scale
             update_scale_id()
         elif int(state.level_id[1:]) == 1:
             Session_state.flag = 1
             if new_level_id >= new_max_level:
+                state.progress += state.progress_for_each_scale
                 update_scale_id()
             state.level_id = f"L{new_level_id}"
         elif Session_state.flag == 1:
             if new_level_id < new_max_level:
                 state.level_id = f"{new_level_id}"
             else:
+                state.progress += state.progress_for_each_scale
                 update_scale_id()
             Session_state.flag = 0
         else:
@@ -89,6 +99,7 @@ def update_level_id():
             filtered_questions = Session_state.data[
                 (Session_state.data["Scale_Id"] == state.scale_id) & (Session_state.data["Level_Id"] == state.level_id)]
             if filtered_questions.empty:
+                state.progress += state.progress_for_each_scale
                 update_scale_id()
         elif state.level_id == f'L{Session_state.min_level}':
             filtered_questions = Session_state.data[
@@ -96,6 +107,7 @@ def update_level_id():
             if filtered_questions.empty:
                 state.level_id = f'L{Session_state.min_level + 1}'
         else:
+            state.progress += state.progress_for_each_scale
             update_scale_id()
 
     state.responses = {}

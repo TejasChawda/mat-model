@@ -116,4 +116,3 @@ def calculate_accuracy():
     return accuracy
 
 
-# def show_history():
