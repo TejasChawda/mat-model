@@ -7,7 +7,6 @@ import Session_state
 import streamlit as st
 
 import Results
-import form_decorators
 
 state = Session_state.get_session_state()
 
@@ -57,12 +56,6 @@ def update_csv_from_json(csv_file_path, json_file_path):
 
     # Write the updated DataFrame back to the original CSV file
     df.to_csv(csv_file_path, index=False)
-
-
-def loadin_screen():
-    loading_screen = st.empty()
-    loading_screen.subheader("please wait while we load next questions")
-    form_decorators.loader("Loading......")
 
 
 def update_level_id():

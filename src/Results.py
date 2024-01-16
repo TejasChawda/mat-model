@@ -8,7 +8,9 @@ import streamlit as st
 from firebase_admin import credentials, firestore, initialize_app, get_app
 import Session_state
 from datetime import datetime, date
-
+from streamlit_lottie import st_lottie
+import hydralit_components as hc
+import time
 
 state = Session_state.get_session_state()
 
@@ -116,3 +118,20 @@ def calculate_accuracy():
     return accuracy
 
 
+def read_animation_file(path):
+    with open(path, "r") as gif:
+        return json.load(gif)
+
+
+def render_animation():
+    animation = read_animation_file("/Users/admin/Desktop/pythonStreamlitDemo/Files/hello.json")
+    st_lottie(
+        animation,
+        speed=2,
+        reverse=True
+    )
+
+
+def loader(message):
+    with hc.HyLoader(message,hc.Loaders.standard_loaders,index=[2]):
+        time.sleep(5)
