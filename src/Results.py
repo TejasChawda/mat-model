@@ -11,6 +11,7 @@ from datetime import datetime, date
 from streamlit_lottie import st_lottie
 import hydralit_components as hc
 import time
+import database
 
 state = Session_state.get_session_state()
 
@@ -64,14 +65,17 @@ def show_plotted_graph():
 
 
 def send_responses_to_database():
-    # Replace the path with the correct path to your Firebase Admin SDK JSON file
-    cred = credentials.Certificate(
-        "/Users/admin/Desktop/pythonStreamlitDemo/ Config/testapp-20a32-firebase-adminsdk-qf29b-35e854714d.json")
 
-    try:
-        app = get_app()
-    except ValueError:
-        app = initialize_app(cred)
+    database.init_db()
+
+    # # Replace the path with the correct path to your Firebase Admin SDK JSON file
+    # cred = credentials.Certificate(
+    #     "/Users/admin/Desktop/pythonStreamlitDemo/ Config/testapp-20a32-firebase-adminsdk-qf29b-35e854714d.json")
+    #
+    # try:
+    #     app = get_app()
+    # except ValueError:
+    #     app = initialize_app(cred)
 
     json_file_path = paths.read_paths().get('RESPONSE_JSON')
 

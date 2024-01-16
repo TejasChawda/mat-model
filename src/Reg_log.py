@@ -8,6 +8,7 @@ from firebase_admin import credentials, auth, firestore
 import homepage
 import Application
 import Results
+import database
 
 state = get_session_state()
 
@@ -25,10 +26,12 @@ def verify_password(entered_password, stored_password):
 
 
 # Initialize Firebase Admin SDK
-if not firebase_admin._apps:
-    cred = credentials.Certificate(
-        '/Users/admin/Desktop/pythonStreamlitDemo/ Config/testapp-20a32-firebase-adminsdk-qf29b-35e854714d.json')
-    firebase_admin.initialize_app(cred)
+# if not firebase_admin._apps:
+#     cred = credentials.Certificate(
+#         '/Users/admin/Desktop/pythonStreamlitDemo/ Config/testapp-20a32-firebase-adminsdk-qf29b-35e854714d.json')
+#     firebase_admin.initialize_app(cred)
+
+database.init_db()
 
 # Initialize Firestore
 db = firestore.client()
