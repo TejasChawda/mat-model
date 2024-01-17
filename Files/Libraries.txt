@@ -8,3 +8,4 @@ io
 random
 re
 bcrypt
+streamlit_lottie

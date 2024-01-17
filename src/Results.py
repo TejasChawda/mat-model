@@ -5,9 +5,9 @@ import plotly.express as px
 import paths
 import io
 import streamlit as st
-from firebase_admin import credentials, firestore, initialize_app, get_app
+from firebase_admin import firestore
 import Session_state
-from datetime import datetime, date
+from datetime import datetime
 from streamlit_lottie import st_lottie
 import hydralit_components as hc
 import time
@@ -65,7 +65,6 @@ def show_plotted_graph():
 
 
 def send_responses_to_database():
-
     database.init_db()
 
     # # Replace the path with the correct path to your Firebase Admin SDK JSON file
@@ -87,16 +86,14 @@ def send_responses_to_database():
 
     # Send the entire string to Firestore
     data = {
-        'date': str(date.today()),
         'userResponse': response_string
     }
 
-    now = datetime.now()
-    formatted_time = now.strftime("%H:%M:%S")
-    doc_name = str(formatted_time) + "_" + state.user_id
     db = firestore.client()
-    doc_ref = db.collection('user_responses').document(doc_name)
-    doc_ref.set(data)
+    base_doc_ref = db.collection('user_responses')
+    user_doc_ref = base_doc_ref.document(state.user_id)
+    date_ref_doc = user_doc_ref.collection('dates').document(str(datetime.today().date()))
+    date_ref_doc.set(data)
 
 
 def save_responses_to_json(new_responses, json_file_path):
@@ -127,15 +124,22 @@ def read_animation_file(path):
         return json.load(gif)
 
 
-def render_animation():
-    animation = read_animation_file("/Users/admin/Desktop/pythonStreamlitDemo/Files/hello.json")
+def render_animation(path, width, height):
+    animation = read_animation_file(path)
     st_lottie(
         animation,
         speed=2,
-        reverse=True
+        reverse=True,
+        width=width,
+        height=height
     )
 
 
-def loader(message):
-    with hc.HyLoader(message,hc.Loaders.standard_loaders,index=[2]):
+def custom_loader(message):
+    with hc.HyLoader(message, hc.Loaders.standard_loaders, index=[1]):
         time.sleep(5)
+
+
+def spinner(message, seconds):
+    with st.spinner(message):
+        time.sleep(seconds)

@@ -34,7 +34,7 @@ def main():
 
         for _, question in filtered_questions.iterrows():
             widget_key = f"{question['Q_Id']}_{state.level_id}"  # Use both Q_Id and level_id as a key
-            option = form.radio(question["Questions"], list(choice.name for choice in options.Options), key=widget_key)
+            option = form.radio(question["Questions"], list(choice.name for choice in options.Options), key=widget_key, index=None)
 
             # if option is not None:
             selected_option = options.Options[option] if option else None
@@ -49,19 +49,25 @@ def main():
             }
 
         # Outside the for loop
-        if form.form_submit_button("Submit Responses") and len(state.responses) == len(filtered_questions):
+        if form.form_submit_button("Submit Responses"):
+            try:
+                if len(state.responses) == len(filtered_questions):
 
-            if not state.available_scale_ids:
-                state.page = "Graph"
-                st.rerun()
+                    Results.spinner("submitting your responses....",2)
+                    if not state.available_scale_ids:
+                        state.page = "Graph"
+                        st.rerun()
 
-            # accuracy = Results.calculate_accuracy()
-            # st.success(f"Responses submitted successfully! Accuracy: {accuracy:.2f}%")
+                    # accuracy = Results.calculate_accuracy()
+                    # st.success(f"Responses submitted successfully! Accuracy: {accuracy:.2f}%")
 
-            # Save responses to a JSON file
-            json_file_path = paths.read_paths().get('RESPONSE_JSON')
-            Results.save_responses_to_json(list(state.responses.values()), json_file_path)
-            Update.update_csv_from_json(paths.read_paths().get('DATA'), json_file_path)
+                    # Save responses to a JSON file
+                    json_file_path = paths.read_paths().get('RESPONSE_JSON')
+                    Results.save_responses_to_json(list(state.responses.values()), json_file_path)
+                    Update.update_csv_from_json(paths.read_paths().get('DATA'), json_file_path)
 
-            Update.update_level_id()
-            st.write(f"Updated Level: {state.level_id}")
+                    Update.update_level_id()
+                    st.write(f"Updated Level: {state.level_id}")
+            except Exception as e:
+                st.warning("Please answer all the questions before submitting....")
+

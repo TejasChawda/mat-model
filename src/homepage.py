@@ -2,7 +2,8 @@ import streamlit as st
 from Session_state import get_session_state
 import sidebar
 import Results
-
+import paths
+import history
 # Initialize session state
 state = get_session_state()
 
@@ -22,16 +23,14 @@ def display_homepage():
             start = st.button("Start Assessment")
 
             if start:
+                Results.spinner("Please wait while we are loading Questions",2)
                 state.page = "Assessment"
                 st.rerun()
 
         with col2:
-            Results.render_animation()
+            Results.render_animation(paths.read_paths().get("HELLO_ANIMATION"), 500, 600)
 
+    elif state.page == "History":
+        history.show_ui()
     else:
         st.warning("User not authenticated. Please log in.")
-
-
-
-
-

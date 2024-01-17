@@ -3,8 +3,7 @@ import streamlit as st
 import re
 from Session_state import get_session_state
 from streamlit_option_menu import option_menu
-import firebase_admin
-from firebase_admin import credentials, auth, firestore
+from firebase_admin import auth, firestore
 import homepage
 import Application
 import Results
@@ -50,15 +49,30 @@ def login_view():
     st.subheader("Login")
     email = st.text_input('Email:')
     password = st.text_input('Password:', type='password')
-    login_button = st.button('Login')
 
-    if login_button:
-        uem = login(email, password)
-        state.authenticated_user = uem.email
-        state.user_id = uem.uid
-        Results.loader("Loading.....")
-        state.page = "Homepage"
-        st.rerun()
+    # Center the button and give it a larger width
+    st.markdown("""
+    <style>
+        div.stButton > button {
+            width: 200px;
+            margin: 0 auto;
+            display: block;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Create the centered and wider button
+    if st.button('Login'):
+        if email != "":
+            st.balloons()
+            uem = login(email, password)
+            state.authenticated_user = uem.email
+            state.user_id = uem.uid
+            # Results.custom_loader("Loading.....")
+            state.page = "Homepage"
+            st.rerun()
+        else:
+            st.warning("please provide your credentials")
 
 
 def register_view():
@@ -69,17 +83,37 @@ def register_view():
 
     if email != "" and not validate_email(email):
         st.warning("Invalid email format. Please enter a valid email.")
+
     phone_number = st.text_input("Phone Number:")
     password = st.text_input("Password:", type="password")
 
     if password != "" and not validate_password(password):
         st.warning("Password must be at least 8 characters long.")
+
     confirm_password = st.text_input("Confirm Password:", type="password")
+
+    # Center the button and give it a larger width
+    st.markdown("""
+    <style>
+        div.stButton > button {
+            width: 200px;
+            margin: 0 auto;
+            display: block;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Create the centered and wider button
     register_button = st.button('Register')
 
     if register_button:
         if password == confirm_password:
-            signup(email, password, full_name, phone_number, organization)
+            st.balloons()
+            user_object = signup(email, password, full_name, phone_number, organization)
+            state.authenticated_user = user_object["email"]
+            state.user_id = user_object["uid"]
+            state.page = "Homepage"
+            st.rerun()
         else:
             st.error("Password and Confirm Password do not match. Please try again.")
 
@@ -102,6 +136,11 @@ def signup(email, password, name, ph, org):
             # Add more fields as needed
         })
         print(f"User {email} successfully created with ID: {user.uid}")
+        uem = {
+                'email':email,
+                'uid':user.uid
+               }
+        return uem
     except Exception as e:
         print(f"Error creating user: {e}")
 
