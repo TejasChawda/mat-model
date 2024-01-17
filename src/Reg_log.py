@@ -8,6 +8,7 @@ import homepage
 import Application
 import Results
 import database
+import history
 
 state = get_session_state()
 
@@ -171,6 +172,8 @@ def login(email, password):
 
 if state.page == "Homepage":
     homepage.display_homepage()
+elif state.page == "History":
+    history.main()
 elif state.page == "Assessment":
     Application.main()
 elif state.page == "Graph":

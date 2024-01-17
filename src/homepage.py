@@ -30,7 +30,5 @@ def display_homepage():
         with col2:
             Results.render_animation(paths.read_paths().get("HELLO_ANIMATION"), 500, 600)
 
-    elif state.page == "History":
-        history.show_ui()
     else:
         st.warning("User not authenticated. Please log in.")
