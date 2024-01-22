@@ -9,6 +9,7 @@ import streamlit as st
 import Results
 
 state = Session_state.get_session_state()
+fil_scales = None
 
 
 def update_scale_id():
@@ -105,3 +106,13 @@ def update_level_id():
 
     state.responses = {}
     st.rerun()
+
+
+# def update_available_scales(chosen_scales):
+#     global fil_scales
+#     for scale in chosen_scales:
+#         filtered_scales = Session_state.data[Session_state.data["Scale"] == scale]
+#         filtered_scale_ids = filtered_scales['Scale_Id']
+#         fil_scales = filtered_scale_ids
+#
+#     return fil_scales

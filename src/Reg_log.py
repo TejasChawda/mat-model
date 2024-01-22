@@ -69,6 +69,7 @@ def login_view():
             uem = login(email, password)
             state.authenticated_user = uem.email
             state.user_id = uem.uid
+
             # Results.custom_loader("Loading.....")
             state.page = "Homepage"
             st.rerun()
@@ -138,9 +139,9 @@ def signup(email, password, name, ph, org):
         })
         print(f"User {email} successfully created with ID: {user.uid}")
         uem = {
-                'email':email,
-                'uid':user.uid
-               }
+            'email': email,
+            'uid': user.uid,
+        }
         return uem
     except Exception as e:
         print(f"Error creating user: {e}")
@@ -173,7 +174,7 @@ def login(email, password):
 if state.page == "Homepage":
     homepage.display_homepage()
 elif state.page == "History":
-    history.main()
+    history.display_history()
 elif state.page == "Assessment":
     Application.main()
 elif state.page == "Graph":

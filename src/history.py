@@ -1,35 +1,34 @@
 import json
-
+import sidebar
 import streamlit as st
 from firebase_admin import firestore
 import database
 import Results
 import paths
 import Update
+import Session_state
 
 document_ids = []
 database.init_db()
 db = firestore.client()
-uid = 'E1a64bLgyHSDGak3MyCfoXMYwan1'
+
+state = Session_state.get_session_state()
 
 
 def retrieve_data():
     global document_ids  # Correct way to get the Firestore client
-    collection_ref = db.collection(f'user_responses/{uid}/dates')
-    documents = collection_ref.stream()
-    for doc in documents:
-        print(f"Document Name: {doc.id}")
+
+    collection_ref = db.collection(f'user_responses/{str(state.user_id)}/dates')
     documents = collection_ref.stream()
     document_ids = [doc.id for doc in documents]
     return document_ids
 
 
 def display_graph(selected_opt):
-    doc_path = f'user_responses/{uid}/dates/{selected_opt}'
+    doc_path = f'user_responses/{str(state.user_id)}/dates/{selected_opt}'
     doc_ref = db.document(doc_path)
     doc_snapshot = doc_ref.get()
     response = doc_snapshot.get("userResponse")
-    print(response)
     json_resp = json.loads(response)
 
     json_file = paths.read_paths().get('RESPONSE_JSON')
@@ -41,17 +40,23 @@ def display_graph(selected_opt):
     Results.show_plotted_graph()
 
 
-def main():
-    st.title("View Previous Assessment!")
+def display_history():
+    all_dates = retrieve_data()
+    sidebar.show_sidebar()
 
-    # Centered text
+    col2, col3 = st.columns(2)
+
+    with col2:
+        st.title("View Assessment History")
+    with col3:
+        Results.render_animation(paths.read_paths().get('DB_ANIMATION'), 250, 200)
+
     st.markdown("""
-    <div style="display: flex; justify-content: center; align-items: center; height: 150px;">
-        <h3>Select Date of assessment taken</h3>
+    <div style="display: flex; justify-content: center; align-items: center; height: 150px;">            
+    <h3>Select Date of assessment taken</h3>
     </div>
     """, unsafe_allow_html=True)
 
-    all_dates = retrieve_data()
     selected_option = st.selectbox("", all_dates)
 
     # Submit button

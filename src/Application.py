@@ -13,6 +13,27 @@ data = Session_state.data
 def main():
     st.title("Testing Assessment")
 
+    st.write(state.available_scale_ids)
+
+    st.markdown(
+        """
+        <style>
+            .btn-container {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    btn_container = st.container()
+
+    if btn_container.button("END TEST"):
+        st.session_state.page = "Homepage"
+        st.rerun()
+
     col1, col2 = st.columns(2)
 
     with col1:
@@ -34,7 +55,7 @@ def main():
 
         for _, question in filtered_questions.iterrows():
             widget_key = f"{question['Q_Id']}_{state.level_id}"  # Use both Q_Id and level_id as a key
-            option = form.radio(question["Questions"], list(choice.name for choice in options.Options), key=widget_key, index=None)
+            option = form.radio(question["Questions"], list(choice.name for choice in options.Options), key=widget_key)
 
             # if option is not None:
             selected_option = options.Options[option] if option else None
@@ -53,7 +74,7 @@ def main():
             try:
                 if len(state.responses) == len(filtered_questions):
 
-                    Results.spinner("submitting your responses....",2)
+                    Results.spinner("submitting your responses....", 2)
                     if not state.available_scale_ids:
                         state.page = "Graph"
                         st.rerun()
@@ -70,4 +91,3 @@ def main():
                     st.write(f"Updated Level: {state.level_id}")
             except Exception as e:
                 st.warning("Please answer all the questions before submitting....")
-

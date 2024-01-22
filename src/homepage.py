@@ -4,6 +4,9 @@ import sidebar
 import Results
 import paths
 import history
+import Session_state
+import Update
+
 # Initialize session state
 state = get_session_state()
 
@@ -20,10 +23,14 @@ def display_homepage():
             st.markdown("- Tip 1: Always read the question carefully.")
             st.markdown("- Tip 2: Be true to yourself.")
 
+            # selected_scales = st.multiselect("Select the scales :", Session_state.scale_ids)
+            # scales = Update.update_available_scales(selected_scales)
+            # state.available_scale_ids = scales
+
             start = st.button("Start Assessment")
 
             if start:
-                Results.spinner("Please wait while we are loading Questions",2)
+                Results.spinner("Please wait while we are loading Questions", 2)
                 state.page = "Assessment"
                 st.rerun()
 

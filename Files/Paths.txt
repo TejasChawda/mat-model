@@ -1,5 +1,5 @@
 MODEL=/Users/admin/Desktop/pythonStreamlitDemo/Files/Models/model.csv
 DATA=/Users/admin/Desktop/pythonStreamlitDemo/Files/Data/data.csv
 RESPONSE_JSON=/Users/admin/Desktop/pythonStreamlitDemo/Files/output/response.json
-HELLO_ANIMATION=/Users/admin/Desktop/pythonStreamlitDemo/Files/hello.json
+HELLO_ANIMATION=/Users/admin/Desktop/pythonStreamlitDemo/Files/quiz.json
 DB_ANIMATION=/Users/admin/Desktop/pythonStreamlitDemo/Files/database.json

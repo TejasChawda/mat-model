@@ -92,7 +92,7 @@ def send_responses_to_database():
     db = firestore.client()
     base_doc_ref = db.collection('user_responses')
     user_doc_ref = base_doc_ref.document(state.user_id)
-    date_ref_doc = user_doc_ref.collection('dates').document(str(datetime.today().date()))
+    date_ref_doc = user_doc_ref.collection('dates').document(str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     date_ref_doc.set(data)
 
 

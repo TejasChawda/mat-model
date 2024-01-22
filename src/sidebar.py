@@ -1,23 +1,44 @@
 import streamlit as st
 import Session_state
+import Results
 
 state = Session_state.get_session_state()
 
 
 def show_sidebar():
-    st.sidebar.text(" Hello 👋")
+    profile_picture_link = "https://images.unsplash.com/photo-1682685797439-a05dd915cee9?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    round_image_style = """
+    <style>
+        img {
+            border-radius: 50%;
+            max-width: 150px;
+            max-height: 150px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    """
+    st.markdown(round_image_style, unsafe_allow_html=True)
+    st.sidebar.image(profile_picture_link, caption="Your Profile Picture", use_column_width=True)
     logged_in_user = str(state.authenticated_user)
-    user_clicked = st.sidebar.button(logged_in_user, key="user_button")
-    if user_clicked:
-        profile_options()
-
-
-def profile_options():
-    if st.sidebar.button("History"):
-        state.page = "History"
-        st.rerun()
+    st.sidebar.text(" Hello 👋 "+logged_in_user)
+    if state.page == "Homepage":
+        if st.sidebar.button("History"):
+            Results.custom_loader("Please wait while we fetch your data....")
+            state.page = "History"
+            st.rerun()
+    elif state.page == "History":
+        if st.sidebar.button("Homepage"):
+            state.page = "Homepage"
+            st.rerun()
 
     if st.sidebar.button("Logout"):
-        st.success("Logged out successfully!")
+        print(state.authenticated_user+" is"+" Logged out successfully!")
+        state.initialized = True
         state.authenticated_user = None
+        state.user_id = None
+        state.responses = {}
         state.page = "Login"
+        st.rerun()
+
