@@ -1,37 +1,20 @@
 import json
 import sidebar
 import streamlit as st
-from firebase_admin import firestore
-import database
 import Results
 import paths
 import Update
 import Session_state
 import Json
 import Csv
-
-document_ids = []
-database.init_db()
-db = firestore.client()
+import database
 
 state = Session_state.get_session_state()
 
 
-def retrieve_data():
-    global document_ids  # Correct way to get the Firestore client
-
-    collection_ref = db.collection(f'user_responses/{str(state.user_id)}/dates')
-    documents = collection_ref.stream()
-    document_ids = [doc.id for doc in documents]
-    return document_ids
-
-
 def display_graph(selected_opt):
-    doc_path = f'user_responses/{str(state.user_id)}/dates/{selected_opt}'
-    doc_ref = db.document(doc_path)
-    doc_snapshot = doc_ref.get()
-    response = doc_snapshot.get("userResponse")
-    json_resp = json.loads(response)
+
+    json_resp = database.retrieve_data(selected_opt)
 
     json_file = paths.read_paths().get('RESPONSE_JSON')
 
@@ -47,7 +30,7 @@ def display_graph(selected_opt):
 
 
 def display_history():
-    all_dates = retrieve_data()
+    all_dates = database.retrieve_dates()
     sidebar.show_sidebar()
 
     col2, col3 = st.columns(2)
