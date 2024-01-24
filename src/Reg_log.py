@@ -165,6 +165,7 @@ def login(email, password):
             return user
         else:
             print("Incorrect password.")
+            st.error("Incorrect password")
     except auth.UserNotFoundError:
         print("User not found. Please sign up.")
     except Exception as e:

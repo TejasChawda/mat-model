@@ -7,6 +7,8 @@ import Results
 import paths
 import Update
 import Session_state
+import Json
+import Csv
 
 document_ids = []
 database.init_db()
@@ -34,8 +36,12 @@ def display_graph(selected_opt):
     json_file = paths.read_paths().get('RESPONSE_JSON')
 
     with open(json_file, 'w') as json_file:
-        json_file.write('')
         json_file.write(json_resp)
+
+    scales = Json.get_scales_from_json(paths.read_paths().get('RESPONSE_JSON'))
+    Csv.filter_csv(Session_state.scale_ids, scales, paths.read_paths().
+                   get('MODEL'), paths.read_paths().
+                   get('DATA'))
     Update.update_csv_from_json(paths.read_paths().get('DATA'), paths.read_paths().get('RESPONSE_JSON'))
     Results.show_plotted_graph()
 

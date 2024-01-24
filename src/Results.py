@@ -17,6 +17,12 @@ state = Session_state.get_session_state()
 
 
 def show_plotted_graph():
+
+    if st.button("Homepage", key=2):
+        state.page = "Homepage"
+        # Session_state.get_session_state()
+        st.rerun()
+
     df = pd.read_csv(paths.read_paths().get('DATA'))
     df['Points'] = df['Points'].str.wrap(30)
     df['Points'] = df['Points'].str.replace('\n', '<br>')

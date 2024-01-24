@@ -32,6 +32,7 @@ def main():
 
     if btn_container.button("END TEST"):
         st.session_state.page = "Homepage"
+        # Session_state.get_session_state()
         st.rerun()
 
     col1, col2 = st.columns(2)
@@ -91,3 +92,4 @@ def main():
                     st.write(f"Updated Level: {state.level_id}")
             except Exception as e:
                 st.warning("Please answer all the questions before submitting....")
+                print(e)

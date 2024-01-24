@@ -108,11 +108,10 @@ def update_level_id():
     st.rerun()
 
 
-# def update_available_scales(chosen_scales):
-#     global fil_scales
-#     for scale in chosen_scales:
-#         filtered_scales = Session_state.data[Session_state.data["Scale"] == scale]
-#         filtered_scale_ids = filtered_scales['Scale_Id']
-#         fil_scales = filtered_scale_ids
-#
-#     return fil_scales
+def set_up(selected_scales):
+    state.page = "Assessment"
+    state.available_scale_ids = selected_scales
+    state.initial_scale_id = random.choice(selected_scales)
+    state.scale_id = state.initial_scale_id
+    state.scale_count = len(selected_scales)
+    state.progress_for_each_scale = round(100 / state.scale_count)
