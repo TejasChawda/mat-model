@@ -26,7 +26,6 @@ def get_session_state():
         st.session_state.user_id = None
         st.session_state.page = "Login"
         st.session_state.available_scale_ids = scale_ids
-        st.session_state.current_page = 1
         st.session_state.initial_scale_id = random.choice(scale_ids)
         st.session_state.responses = {}
         st.session_state.level_id = f'L{init_level}'

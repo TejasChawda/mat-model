@@ -32,9 +32,10 @@ def retrieve_data(selected_opt):
 
 
 def retrieve_dates():
-    global document_ids  # Correct way to get the Firestore client
+    global document_ids
 
     collection_ref = db.collection(f'user_responses/{str(state.user_id)}/dates')
     documents = collection_ref.stream()
     document_ids = [doc.id for doc in documents]
+
     return document_ids

@@ -9,8 +9,13 @@ state = Session_state.get_session_state()
 
 data = Session_state.data
 
+disable_button = False
+
 
 def main():
+
+    global disable_button
+
     st.title("Testing Assessment")
 
     st.write(state.available_scale_ids)
@@ -28,11 +33,21 @@ def main():
         unsafe_allow_html=True
     )
 
-    btn_container = st.container()
+    button_mapping = {
+        "END TEST": "Homepage",
+        "SUBMIT": "Graph",
+    }
 
-    if btn_container.button("END TEST"):
-        st.session_state.page = "Homepage"
-        # Session_state.get_session_state()
+    # Create buttons in a single row
+    end = st.button("END TEST", key=1)
+    submit = st.button("SUBMIT", key=2)
+
+    # Check button clicks and update state accordingly
+    if end:
+        state.page = button_mapping["END TEST"]
+        st.rerun()
+    elif submit:
+        state.page = button_mapping["SUBMIT"]
         st.rerun()
 
     col1, col2 = st.columns(2)
@@ -52,8 +67,9 @@ def main():
     if filtered_questions.empty:
         st.warning("No questions found for the provided Scale ID and Level ID.")
         Update.update_level_id()
+    elif state.available_scale_ids is None:
+        disable_button = True
     else:
-
         for _, question in filtered_questions.iterrows():
             widget_key = f"{question['Q_Id']}_{state.level_id}"  # Use both Q_Id and level_id as a key
             option = form.radio(question["Questions"], list(choice.name for choice in options.Options), key=widget_key)
@@ -71,14 +87,14 @@ def main():
             }
 
         # Outside the for loop
-        if form.form_submit_button("Submit Responses"):
+        if form.form_submit_button("Submit Responses", disabled=disable_button):
             try:
                 if len(state.responses) == len(filtered_questions):
+                    # if not state.available_scale_ids:
+                    #     state.page = "Graph"
+                    #     st.rerun()
 
                     Results.spinner("submitting your responses....", 2)
-                    if not state.available_scale_ids:
-                        state.page = "Graph"
-                        st.rerun()
 
                     # accuracy = Results.calculate_accuracy()
                     # st.success(f"Responses submitted successfully! Accuracy: {accuracy:.2f}%")
