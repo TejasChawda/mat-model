@@ -71,7 +71,7 @@ def update_level_id():
             else:
                 state.progress += state.progress_for_each_scale
                 update_scale_id()
-            Session_state.flag = 0
+                Session_state.flag = 0
         else:
             state.level_id = f'L{new_level_id}'
     else:
@@ -88,6 +88,9 @@ def update_level_id():
                 (Session_state.data["Scale_Id"] == state.scale_id) & (Session_state.data["Level_Id"] == state.level_id)]
             if filtered_questions.empty:
                 state.level_id = f'L{Session_state.min_level + 1}'
+            else:
+                state.progress += state.progress_for_each_scale
+                update_scale_id()
         else:
             state.progress += state.progress_for_each_scale
             update_scale_id()
