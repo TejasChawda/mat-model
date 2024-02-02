@@ -109,4 +109,5 @@ def main():
                     st.warning("Please answer all the questions before submitting....")
                     print(e)
     else:
+        Results.render_animation(paths.read_paths().get('HURRAY'),200,300)
         st.write("All Questions have been answered click to view the results")
