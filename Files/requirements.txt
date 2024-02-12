@@ -6,3 +6,5 @@ python_bcrypt==0.3.2
 streamlit==1.29.0
 streamlit_lottie==0.0.5
 streamlit_option_menu==0.3.6
+bcrypt==4.1.2
+
