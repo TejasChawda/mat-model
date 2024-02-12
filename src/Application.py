@@ -34,19 +34,19 @@ def main():
 
     button_mapping = {
         "END TEST": "Homepage",
-        "DONE": "Graph",
+        "VIEW RESULTS": "Graph",
     }
 
     # Create buttons in a single row
     end = st.button("END TEST", key=1)
-    submit = st.button("DONE", key=2)
+    submit = st.button("VIEW RESULTS", key=2)
 
     # Check button clicks and update state accordingly
     if end:
         state.page = button_mapping["END TEST"]
         st.rerun()
     elif submit:
-        state.page = button_mapping["DONE"]
+        state.page = button_mapping["VIEW RESULTS"]
         st.rerun()
 
     col1, col2 = st.columns(2)
@@ -109,5 +109,5 @@ def main():
                     st.warning("Please answer all the questions before submitting....")
                     print(e)
     else:
-        Results.render_animation(paths.read_paths().get('HURRAY'),200,300)
+        Results.render_animation(paths.read_paths().get('HURRAY'), 200, 300)
         st.write("All Questions have been answered click to view the results")
