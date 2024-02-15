@@ -1,6 +1,6 @@
-MODEL=/Users/admin/Desktop/pythonStreamlitDemo/Files/Models/model.csv
-DATA=/Users/admin/Desktop/pythonStreamlitDemo/Files/Data/data.csv
-RESPONSE_JSON=/Users/admin/Desktop/pythonStreamlitDemo/Files/output/response.json
-HELLO_ANIMATION=/Users/admin/Desktop/pythonStreamlitDemo/Files/hello.json
-DB_ANIMATION=/Users/admin/Desktop/pythonStreamlitDemo/Files/database.json
-HURRAY=/Users/admin/Desktop/pythonStreamlitDemo/Files/hello2.json
+MODEL=Files/Models/model.csv
+DATA=Files/Data/data.csv
+RESPONSE_JSON=Files/output/response.json
+HELLO_ANIMATION=Files/hello.json
+DB_ANIMATION=Files/database.json
+HURRAY=Files/hello2.json
